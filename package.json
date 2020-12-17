@@ -31,5 +31,8 @@
     "multer-gridfs-storage": "^4.2.0",
     "sharp": "^0.26.3",
     "ts-node-dev": "^1.1.1"
+  },
+  "engines": {
+    "node": "10.x"
   }
 }
