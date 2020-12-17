@@ -41,7 +41,7 @@ class App {
   }
 
   public start(): void {
-    this.server.listen(this.config.server.port, this.config.server.host);
+    this.server.listen(this.config.server.port);
   }
 
   public stop(): void {
