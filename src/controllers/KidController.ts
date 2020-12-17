@@ -1,6 +1,5 @@
-import { ObjectID } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
-import { KidModel, KidKeys, OrganisationModel } from '../models';
+import { KidModel, KidKeys, OrganisationModel, IKid } from '../models';
 import { Utils } from '../services';
 
 class KidController {
@@ -64,7 +63,7 @@ class KidController {
             const id = req.body.verifiedKidId;
             
             // get model
-            const kid = await KidModel.findOne({'_id': id})
+            const kid: IKid = await KidModel.findOne({'_id': id})
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });

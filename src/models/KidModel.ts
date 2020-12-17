@@ -12,6 +12,7 @@ interface IKid extends Document {
     birth_date: Date;
     current_organisation: IOrganisation;
     fiches: [ IFiche ];
+    _soft_deleted: Boolean;
 }
 
 interface IFiche{
