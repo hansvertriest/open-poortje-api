@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose'
+import { default as mongoose } from 'mongoose'
 import { Document, Schema, Model } from 'mongoose';
 
 interface ITest extends Document {

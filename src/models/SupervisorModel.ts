@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import { Document, Schema, Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 
 import { IAuth } from './d.types';
 import { IOrganisation } from './OrganisationModel';
@@ -11,7 +10,7 @@ interface ISupervisor extends Document {
     first_name: string;
     last_name: string;
     organisation: IOrganisation;
-    _softDeleted: boolean;
+    _soft_deleted: boolean;
 }
 
 const supervisorSchema: Schema = new Schema({

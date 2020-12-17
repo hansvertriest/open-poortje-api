@@ -13,7 +13,7 @@
       "esModuleInterop": true,
       "experimentalDecorators": true,
       "forceConsistentCasingInFileNames": true,
-      "noImplicitAny": false,
+      "noImplicitAny": true,
       "resolveJsonModule": true,
       "sourceMap": true,
       "strict": true,

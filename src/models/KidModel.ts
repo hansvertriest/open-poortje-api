@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import { Document, Schema, Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 
 import { IAuth } from './d.types';
 import { IOrganisation, ISupervisor } from './';
@@ -12,6 +11,7 @@ interface IKid extends Document {
     birth_date: Date;
     current_organisation: IOrganisation;
     fiches: [ IFiche ];
+    stickers: ISticker[],
     _soft_deleted: Boolean;
 }
 
@@ -21,6 +21,10 @@ interface IFiche{
     supervisor: ISupervisor;
     fiche: Schema.Types.ObjectId;
     fiche_date: any;
+}
+
+interface ISticker{
+    pictureName: string;
 }
 
 const kidSchema: Schema = new Schema({

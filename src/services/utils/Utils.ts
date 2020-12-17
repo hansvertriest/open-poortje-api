@@ -2,20 +2,20 @@ import * as bcrypt from 'bcrypt';
 import { IAuth } from '../auth';
 
 class Utils {
-    static filterKeysAgainstModelKeys(changes, modelKeys) {
+    static filterKeysAgainstModelKeys(changes: any, modelKeys: any) {
         const changesKeys = Object.keys(changes);
         const filteredKeys = changesKeys.filter((key) => !modelKeys.includes(key));
 
         // construct filteredChanges
-        const filteredChanges = {};
+        const filteredChanges: any = {};
         filteredKeys.forEach((key) => {
-            filteredChanges[key] = changes[key];
+            filteredChanges[`${key}`] = changes[key];
         })
 
         return filteredChanges;
     }
 
-    static obscureAuthOfModel(model) {
+    static obscureAuthOfModel(model:any) {
         const obscuredModel = model;
         obscuredModel.auth.password = undefined;
         return obscuredModel;

@@ -7,7 +7,7 @@ import { ISupervisor, IKid } from './';
 interface IOrganisation extends Document {
     auth: IAuth;
     name: string;
-    supervisors: ISupervisor;
+    supervisors: ISupervisor[];
     kids: IKid[];
 }
 

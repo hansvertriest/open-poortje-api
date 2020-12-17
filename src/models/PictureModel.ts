@@ -1,13 +1,6 @@
 import * as mongoose from 'mongoose'
 import { Schema, Model } from 'mongoose';
-
-interface IPicture extends Document {
-  title: string;
-  description: string;
-  filename: string;
-  _createdAt: number;
-  save: Model
-}
+import { IPicture } from './d.types';
 
 const pictureSchema: Schema = new Schema({
   filename: {
@@ -23,4 +16,4 @@ const pictureSchema: Schema = new Schema({
 
 const PictureModel = mongoose.model<IPicture>('Picture', pictureSchema);
 
-export { PictureModel, IPicture, pictureSchema };
+export { PictureModel, pictureSchema };

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { SupervisorModel, SupervisorKeys, OrganisationModel } from '../models';
+import { SupervisorModel, SupervisorKeys, OrganisationModel, IOrganisation, ISupervisor } from '../models';
 import { Utils } from '../services';
 
 class SupervisorController {
@@ -82,7 +82,7 @@ class SupervisorController {
             const supervisorId = req.params.id;
             
             // get model
-            const organisation = await OrganisationModel.findOne({'_id': organisationId})
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': organisationId})
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
@@ -108,7 +108,7 @@ class SupervisorController {
             const id = req.body.verifiedOrganisationId;
             
             // get model
-            const organisation = await OrganisationModel.findOne({'_id': id})
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': id})
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
@@ -119,7 +119,7 @@ class SupervisorController {
 
             const filteredDeleted = populatedOrganisation.supervisors.filter((supervisor) => supervisor._soft_deleted == false)
 
-            const supervisors = filteredDeleted.map((supervisor) => {
+            const supervisors = filteredDeleted.map((supervisor: ISupervisor) => {
                 return Utils.obscureAuthOfModel(supervisor)
             });
             res.send({organisation_id: id, supervisors});
@@ -134,13 +134,13 @@ class SupervisorController {
         try {
             
             // get model
-            const supervisors = await SupervisorModel.find()
+            const supervisors: ISupervisor[] = await SupervisorModel.find()
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
 
 
-            const populatedOrganisation = supervisors.supervisors.map((supervisor) => {
+            const populatedOrganisation = supervisors.map((supervisor) => {
                 const populatedSupervisor = supervisor.populate('supervisors').execPopulate()
                 return Utils.obscureAuthOfModel(populatedSupervisor)
             });
@@ -223,7 +223,7 @@ class SupervisorController {
             const { verifiedOrganisationId, id } = req.body;
 
             // find organisation
-            const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
             if (organisation.supervisors.includes(id)) {
                 const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'_soft_deleted': true}, {new:true})

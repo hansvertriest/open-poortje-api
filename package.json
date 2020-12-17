@@ -4,9 +4,9 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx tsc",
+    "build": "npx tsc --noEmit",
     "test": "jest",
-    "watch:serve": "ts-node-dev ./src/index.ts --watch --poll --respawn --transpileOnly "
+    "watch:serve": "ts-node-dev src/index.ts --watch --poll --respawn --transpileOnly "
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
@@ -21,6 +21,11 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
+    "@types/bcrypt": "^3.0.0",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/mongoose": "^5.10.3",
+    "@types/multer-gridfs-storage": "^4.0.1",
+    "@types/sharp": "^0.26.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",

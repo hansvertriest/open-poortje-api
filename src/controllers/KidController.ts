@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { KidModel, KidKeys, OrganisationModel, IKid } from '../models';
+import { KidModel, KidKeys, OrganisationModel, IKid, IOrganisation } from '../models';
 import { Utils } from '../services';
 
 class KidController {
     constructor() {
 
     }
-
     // CREATE
 
     public new = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -85,7 +84,7 @@ class KidController {
             const kidId = req.params.id;
             
             // get model
-            const organisation = await OrganisationModel.findOne({'_id': organisationId})
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': organisationId})
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
@@ -110,7 +109,7 @@ class KidController {
             const id = req.body.verifiedOrganisationId;
             
             // get model
-            const organisation = await OrganisationModel.findOne({'_id': id})
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': id})
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
@@ -142,7 +141,7 @@ class KidController {
             
             if (organisation.kids.includes(id)) {
                 // add sticker
-                const kid = await KidModel.findOne({'_id': id})
+                const kid: IKid = await KidModel.findOne({'_id': id})
                     .catch((error) => {
                         throw { status: 500, msg: "Could not save data" };
                     });

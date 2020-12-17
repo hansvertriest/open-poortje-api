@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { OrganisationModel, OrganisationKeys } from '../models';
+import { OrganisationModel, OrganisationKeys, IOrganisation } from '../models';
 import { Utils } from '../services';
 
 class OrganisationController {
@@ -48,7 +48,7 @@ class OrganisationController {
             const id = req.body.verifiedOrganisationId || req.params.id;
             
             // get model
-            const organisation = await OrganisationModel.findOne({ _id: id })
+            const organisation: IOrganisation = await OrganisationModel.findOne({ _id: id })
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });
@@ -70,7 +70,7 @@ class OrganisationController {
     public getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             // get model
-            const organisations = await OrganisationModel.find()
+            const organisations: IOrganisation[] = await OrganisationModel.find()
                 .catch((error) => {
                     throw { status: 404, msg: "Could not find data" };
                 });

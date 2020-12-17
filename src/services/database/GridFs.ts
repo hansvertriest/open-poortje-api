@@ -167,7 +167,7 @@ class GridFs {
 		return new Promise((resolve, reject) => {
 			this.gfsBucket.delete(id)
 				.then(() => resolve())
-				.catch((error) => reject(error));
+				.catch((error:any) => reject(error));
 		}) 
 	}
 }

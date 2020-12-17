@@ -9,7 +9,7 @@ import { IAuth } from '.';
 export default class AuthService {
   public config: IConfig;
 
-  constructor(config) {
+  constructor(config: IConfig) {
     this.config = config;
   }
 
