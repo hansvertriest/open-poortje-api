@@ -16,7 +16,7 @@ class Config implements IConfig {
     loadServerConfig(): void {
         this.server = {
             host: process.env.NODE_HOST,
-            port: Number(process.env.NODE_PORT),
+            port: Number(process.env.PORT) || Number(process.env.NODE_PORT),
             protocol: process.env.NODE_PROTOCOL,
         }
     }

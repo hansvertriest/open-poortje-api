@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx tsc --noEmit",
+    "build": "npx tsc",
     "test": "jest",
     "watch:serve": "ts-node-dev src/index.ts --watch --poll --respawn --transpileOnly "
   },
