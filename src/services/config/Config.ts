@@ -19,6 +19,7 @@ class Config implements IConfig {
             port: Number(process.env.PORT) || Number(process.env.NODE_PORT),
             protocol: process.env.NODE_PROTOCOL,
         }
+        console.log(this.server)
     }
 
     loadMongoDBConfig(): void {
