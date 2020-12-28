@@ -63,7 +63,7 @@ class App {
   }
 
   private KeepAlive(): void {
-    const url = `https://duck-away-api.herokuapp.com/ducks`;
+    const url = `https://open-poortje-api.herokuapp.com`;
     
     (() => {
 
