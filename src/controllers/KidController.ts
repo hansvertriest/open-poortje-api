@@ -24,20 +24,21 @@ class KidController {
                 current_organisation: req.body.verifiedOrganisationId || organisation_id,
                 auth: hashedAuth,
                 _soft_deleted: false
-            }, KidKeys);
+            }, KidKeys, true);
 
             // create new model
             const newKid = new KidModel(filteredProps);
             
             // add kid to organisation
             await OrganisationModel.findOneAndUpdate({ _id: req.body.verifiedOrganisationId || organisation_id }, { '$push': { 'kids': newKid._id} }, { new: true, useFindAndModify: false })
-                .catch((error) => {
+                .catch((error:any) => {
+                    console.log(error)
                     throw { status: 500, msg: "Could not save data" };
                 });
 
             // save model
             const savedKid = await newKid.save()
-                .catch((error) => {
+                .catch((error:any) => {
                     console.log(error)
                     if (error.code == 11000) throw { status: 412, msg: "Duplicate kid name" };
                     throw { status: 500, msg: "Could not save data" };
@@ -62,12 +63,13 @@ class KidController {
             const id = req.body.verifiedKidId;
             
             // get model
-            const kid: IKid = await KidModel.findOne({'_id': id})
-                .catch((error) => {
-                    throw { status: 404, msg: "Could not find data" };
+            const kid: IKid = await KidModel.findOne({'_id': id, _soft_deleted: false})
+                .catch((error: any) => {
+                    console.log(error)
+                    throw { status: 500, msg: "Error occured while finding your data" };
                 });
             
-            if (kid == null) throw { status: 404, msg: "Could not find data" };
+            if (!kid) throw { status: 404, msg: "Could not find data" };
 
             res.send({kid: Utils.obscureAuthOfModel(kid)});
         } catch (error) {
@@ -85,11 +87,16 @@ class KidController {
             
             // get model
             const organisation: IOrganisation = await OrganisationModel.findOne({'_id': organisationId})
-                .catch((error) => {
-                    throw { status: 404, msg: "Could not find data" };
+                .catch((error: any) => {
+                    console.log(error)
+                    throw { status: 500, msg: "Error occured while finding your data" };
                 });
 
+            
+            if (!organisation) throw { status: 404, msg: "Could not find data" };
+
             const populatedOrganisation = await organisation.populate('kids').execPopulate();
+
             // filter by id
             const kids = populatedOrganisation.kids.filter((kid) => kid._id == kidId && kid._soft_deleted == false);
             if (kids.length == 0) throw { status: 404, msg: "Could not find data" };
@@ -110,9 +117,11 @@ class KidController {
             
             // get model
             const organisation: IOrganisation = await OrganisationModel.findOne({'_id': id})
-                .catch((error) => {
-                    throw { status: 404, msg: "Could not find data" };
+                .catch(() => {
+                    throw { status: 500, msg: "Error occured while finding your data" };
                 });
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
 
             const populatedOrganisation = await organisation.populate('kids').execPopulate();
 
@@ -130,19 +139,23 @@ class KidController {
     }
 
     public getAllStickers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        console.log('ddd')
         try {
             const { verifiedOrganisationId, id } = req.body;
 
             if (!verifiedOrganisationId || !id) throw { status: 412, msg: "Given data does not meet requirements" }
 
             // find organisation
-            const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId})
+                .catch(() => {
+                    throw { status: 500, msg: "Error occured while finding your data" };
+                });
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
             
             if (organisation.kids.includes(id)) {
                 // add sticker
                 const kid: IKid = await KidModel.findOne({'_id': id})
-                    .catch((error) => {
+                    .catch(() => {
                         throw { status: 500, msg: "Could not save data" };
                     });
                 console.log(kid)
@@ -175,10 +188,46 @@ class KidController {
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
             if (organisation.kids.includes(id)) {
                 const update = await KidModel.findOneAndUpdate({'_id': id}, filteredProps, {new: true})
-                    .catch((error) => {
+                    .catch((error:any) => {
                         if (error.code == 11000) throw { status: 412, msg: "Duplicate kid name" };
+                        throw { status: 500, msg: "Could not save data" };
+                    });
+                
+                if (!update) throw { status: 404, msg: "Could not find data" };
+
+                res.send({supervisorUpdated: Utils.obscureAuthOfModel(update)});
+            } else { 
+                throw { status: 404, msg: "Could not find kid in organisation." }; 
+            }
+        } catch (error) {
+            const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
+            console.log(log) 
+            res.status(error.status).send({message: error.msg});
+        }
+    }
+
+    public authUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { verifiedOrganisationId, id, authUpdate } = req.body;
+
+            if (!authUpdate || !id) throw { status: 412, msg: "Given data does not meet requirements" }
+
+            if (authUpdate.newPassword != authUpdate.confirmNewPassword) throw { status: 412, msg: "Passwords do not match" }
+
+            // find organisation
+            const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+            
+            if (organisation.kids.includes(id)) {
+                const update = await KidModel.findOneAndUpdate({'_id': id}, {'auth.password': authUpdate.newPassword}, {new: true})
+                    .catch((error: any) => {
+                        console.log(error)
+                        if (error.code == 11000) throw { status: 412, msg: "Duplicate supervisor name" };
                         throw { status: 500, msg: "Could not save data" };
                     });
                 
@@ -208,14 +257,17 @@ class KidController {
 
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
             
             if (organisation.kids.includes(id)) {
                 // add sticker
                 const update = await KidModel.findOneAndUpdate({'_id': id}, { '$push': { stickers: stickerObj } }, {new: true})
-                    .catch((error) => {
+                    .catch((error:any) => {
                         if (error.code == 11000) throw { status: 412, msg: "Duplicate kid name" };
                         throw { status: 500, msg: "Could not save data" };
                     });
+
                 if (!update) throw { status: 404, msg: "Could not find data" };
 
                 res.send({supervisorUpdated: Utils.obscureAuthOfModel(update)});
@@ -237,12 +289,16 @@ class KidController {
 
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
-            console.log(organisation.kids)
+            
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
             if (organisation.kids.includes(id)) {
                 const update = await KidModel.findOneAndUpdate({'_id': id}, {'_soft_deleted': true}, {new:true})
-                    .catch((error) => {
+                    .catch(() => {
                         throw { status: 500, msg: "Could not delete data" };
                     });
+
+                if (!update) throw { status: 404, msg: "Could not find data" };
 
                 res.send({deletionCompleted: true});
             } else { 

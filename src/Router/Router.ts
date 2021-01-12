@@ -177,6 +177,7 @@ class Router {
         this.app.get('/organisation/kids', this.checkOrganisationAccess, this.KidController.getAll);
         this.app.patch('/organisation/kid', this.checkOrganisationAccess, this.KidController.update);
         this.app.delete('/organisation/kid', this.checkOrganisationAccess, this.KidController.softDelete);
+        this.app.patch('/organisation/kid/auth', this.checkOrganisationAccess, this.KidController.authUpdate);
 
 
         this.app.get('/supervisor', this.checkSupervisorAccess, this.SupervisorController.getSelf);

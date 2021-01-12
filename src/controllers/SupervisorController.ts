@@ -12,7 +12,8 @@ class SupervisorController {
     public new = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             // get props
-            const { first_name, last_name, verifiedOrganisationId, organisation_id, auth } = req.body;
+            const { first_name, last_name, verifiedOrganisationId, auth } = req.body;
+            const organisation_id = req.body.verifiedSupervisorId;
 
             // generate hashed auth
             const hashedAuth = await Utils.hashAuth(auth);
@@ -24,17 +25,18 @@ class SupervisorController {
                 organisation: verifiedOrganisationId || organisation_id,
                 auth: hashedAuth,
                 _soft_deleted: false
-            }, SupervisorKeys);
+            }, SupervisorKeys, true);
 
             // create new model
             const newSupervisor = new SupervisorModel(filteredProps);
 
             // add supervisor to organisation
             await OrganisationModel.findOneAndUpdate({ _id: verifiedOrganisationId || organisation_id }, { '$push': { 'supervisors': newSupervisor._id} }, { new: true, useFindAndModify: false })
-                .catch((error) => {
+                .catch((error: any) => {
+                    console.log(error);
                     throw { status: 500, msg: "Could not save data" };
                 });
-
+                
             // save model
             const savedSupervisor = await newSupervisor.save()
                 .catch((error) => {
@@ -59,11 +61,12 @@ class SupervisorController {
             
             // get model
             const supervisor = await SupervisorModel.findOne({'_id': id})
-                .catch((error) => {
+                .catch((error: any) => {
+                    console.log(error);
                     throw { status: 404, msg: "Could not find data" };
                 });
             
-            if (supervisor == null) throw { status: 404, msg: "Could not find data" };
+            if (!supervisor) throw { status: 404, msg: "Could not find supervisor" };
 
             res.send({supervisor: Utils.obscureAuthOfModel(supervisor)});
         } catch (error) {
@@ -83,9 +86,12 @@ class SupervisorController {
             
             // get model
             const organisation: IOrganisation = await OrganisationModel.findOne({'_id': organisationId})
-                .catch((error) => {
+                .catch((error: any) => {
+                    console.log(error);
                     throw { status: 404, msg: "Could not find data" };
                 });
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
 
             const populatedOrganisation = await organisation.populate('supervisors').execPopulate();
 
@@ -109,11 +115,11 @@ class SupervisorController {
             
             // get model
             const organisation: IOrganisation = await OrganisationModel.findOne({'_id': id})
-                .catch((error) => {
+                .catch(() => {
                     throw { status: 404, msg: "Could not find data" };
                 });
 
-            if (organisation == null) throw { status: 404, msg: "Could not find organization" };
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
 
             const populatedOrganisation = await organisation.populate('supervisors').execPopulate();
 
@@ -135,7 +141,8 @@ class SupervisorController {
             
             // get model
             const supervisors: ISupervisor[] = await SupervisorModel.find()
-                .catch((error) => {
+                .catch((error:any) => {
+                    console.log(error)
                     throw { status: 404, msg: "Could not find data" };
                 });
 
@@ -144,6 +151,7 @@ class SupervisorController {
                 const populatedSupervisor = supervisor.populate('supervisors').execPopulate()
                 return Utils.obscureAuthOfModel(populatedSupervisor)
             });
+
             res.send({supervisors: populatedOrganisation});
         } catch (error) {
             const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
@@ -165,9 +173,11 @@ class SupervisorController {
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
             if (organisation.supervisors.includes(id)) {
                 const update = await SupervisorModel.findOneAndUpdate({'_id': id}, filteredProps, {new: true})
-                    .catch((error) => {
+                    .catch((error:any) => {
                         if (error.code == 11000) throw { status: 412, msg: "Duplicate supervisor name" };
                         throw { status: 500, msg: "Could not save data" };
                     });
@@ -196,9 +206,11 @@ class SupervisorController {
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
             if (organisation.supervisors.includes(id)) {
                 const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'auth.password': authUpdate.newPassword}, {new: true})
-                    .catch((error) => {
+                    .catch((error: any) => {
                         console.log(error)
                         if (error.code == 11000) throw { status: 412, msg: "Duplicate supervisor name" };
                         throw { status: 500, msg: "Could not save data" };
@@ -225,11 +237,16 @@ class SupervisorController {
             // find organisation
             const organisation: IOrganisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
             if (organisation.supervisors.includes(id)) {
-                const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'_soft_deleted': true}, {new:true})
-                    .catch((error) => {
+                const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'_soft_deleted': true}, { new: true, useFindAndModify: false })
+                    .catch((error: any) => {
+                        console.log(error)
                         throw { status: 500, msg: "Could not delete data" };
                     });
+
+                    if (!update) throw { status: 404, msg: "Could not find data" };
 
                 res.send({deletionCompleted: true});
             } else { 

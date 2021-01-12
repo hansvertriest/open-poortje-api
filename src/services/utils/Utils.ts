@@ -2,9 +2,11 @@ import * as bcrypt from 'bcrypt';
 import { IAuth } from '../auth';
 
 class Utils {
-    static filterKeysAgainstModelKeys(changes: any, modelKeys: any) {
+    static filterKeysAgainstModelKeys(changes: any, modelKeys: any, includeAuth=false) {
         const changesKeys = Object.keys(changes);
-        const filteredKeys = changesKeys.filter((key) => !modelKeys.includes(key));
+        const filteredKeys = (includeAuth)
+            ? changesKeys.filter((key) => !modelKeys.includes(key))
+            : changesKeys.filter((key) => !modelKeys.includes(key) && key !== 'auth')
 
         // construct filteredChanges
         const filteredChanges: any = {};

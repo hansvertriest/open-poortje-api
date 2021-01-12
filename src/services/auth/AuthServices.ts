@@ -28,7 +28,7 @@ export default class AuthService {
         role: "admin"
       };
       return jwt.sign(payload, this.config.auth.secret, {
-        expiresIn: parseInt(this.config.auth.expiresIn),
+        expiresIn: 3600,
       });
     } else {
       return "";
@@ -46,7 +46,7 @@ export default class AuthService {
       };
   
       return jwt.sign(payload, this.config.auth.secret, {
-        expiresIn: parseInt(this.config.auth.expiresIn),
+        expiresIn: 3600,
       });
     } else {
       return ""
@@ -63,7 +63,7 @@ export default class AuthService {
       };
   
       return jwt.sign(payload, this.config.auth.secret, {
-        expiresIn: parseInt(this.config.auth.expiresIn),
+        // expiresIn: parseInt(this.config.auth.expiresIn),
       });
     } else {
       return ""
@@ -80,7 +80,7 @@ export default class AuthService {
       };
   
       return jwt.sign(payload, this.config.auth.secret, {
-        expiresIn: parseInt(this.config.auth.expiresIn),
+        expiresIn: 3600,
       });
     } else {
       return ""
