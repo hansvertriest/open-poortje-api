@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { KidModel, KidKeys, OrganisationModel, IKid, IOrganisation } from '../models';
+import { KidModel, KidKeys, OrganisationModel, IKid, IOrganisation, IFiche, SupervisorModel, ISupervisor, IFicheType, FicheTypeModel } from '../models';
 import { Utils } from '../services';
+import { Types } from 'mongoose';
 
 class KidController {
     constructor() {
@@ -174,6 +175,59 @@ class KidController {
             res.status(error.status).send({message: error.msg});
         }
     }
+    
+    public newFiche = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { kidId, fiche } = req.body;
+            const supervisorId = req.body.verifiedSupervisorId;
+
+            if (!kidId) throw { status: 412, msg: "Given data does not meet requirements" }
+
+            // check if supervisor has acces to kid
+            const supervisor: ISupervisor = await SupervisorModel.findOne({_id: supervisorId})
+                .catch(() => {
+                    throw { status: 500, msg: "Could not save data" };
+                });
+            if (!supervisor) throw { status: 404, msg: "Could not find supervisor" };
+
+            const supervisorPopulated = await supervisor.populate('organisation').execPopulate();
+
+            if (!supervisorPopulated.organisation.kids.includes(kidId)) throw { status: 403, msg: "Supervisor cannot acces this kid" }
+                
+            // check if fiche type exists
+
+            const ficheType: IFicheType = await FicheTypeModel.findOne({_id: fiche.fiche_type});
+            if (!ficheType) throw { status: 404, msg: "fichetype does not exist" }
+
+            // create fiche object
+            const ficheObject: IFiche = {
+                _id: Types.ObjectId(),
+                _created_at: new Date,
+                _edited_at: new Date,
+                created_by_supervisor: Types.ObjectId(supervisorId),
+                edited_by_supervisor: Types.ObjectId(supervisorId),
+                fiche_type: Types.ObjectId(fiche.fiche_type),
+                fiche_data: fiche.fiche_data,
+            }
+
+            // find and update kid
+            const updatedKid: IKid = await KidModel.findOneAndUpdate(
+                {_id: kidId},
+                { $push: { fiches: ficheObject } },
+                {new: true}
+            )
+            .catch(() => {
+                throw { status: 500, msg: "Error occured while updating your data" };
+            });
+
+            res.send(updatedKid);
+
+        } catch (error) {
+            const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
+            console.log(log) 
+            res.status(error.status).send({message: error.msg});
+        }
+    }
 
     // UPDATE
     public update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -304,6 +358,44 @@ class KidController {
             } else { 
                 throw { status: 404, msg: "Could not find kid in organization." }; 
             }
+        } catch (error) {
+            const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
+            console.log(log) 
+            res.status(error.status).send({message: error.msg});
+        }
+    }
+
+    public deleteFiche = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { kidId, ficheId } = req.body;
+            const supervisorId = req.body.verifiedSupervisorId;
+
+            if (!kidId) throw { status: 412, msg: "Given data does not meet requirements" }
+
+            // check if supervisor has acces to kid
+            const supervisor: ISupervisor = await SupervisorModel.findOne({_id: supervisorId})
+                .catch(() => {
+                    throw { status: 500, msg: "Could not save data" };
+                });
+            if (!supervisor) throw { status: 404, msg: "Could not find supervisor" };
+
+            const supervisorPopulated = await supervisor.populate('organisation').execPopulate();
+
+            if (!supervisorPopulated.organisation.kids.includes(kidId)) throw { status: 403, msg: "Supervisor cannot acces this kid" }
+
+            // find and update kid
+            const kid: IKid = await KidModel.findOne({_id: kidId})
+
+            kid.fiches = kid.fiches.filter((fiche) => fiche._id != ficheId);
+
+            await kid.save()
+                .catch((err) => {
+                    console.log(err)
+                    throw { status: 500, msg: "Error occured while updating your data" };
+                });
+
+            res.send(kid);
+
         } catch (error) {
             const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
             console.log(log) 

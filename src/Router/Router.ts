@@ -7,7 +7,8 @@ import {
     PictureController,
     OrganisationController,
     SupervisorController,
-    KidController
+    KidController,
+    FicheTypeController
 } from '../controllers';
 import { AuthService, IConfig, GridFs } from '../services';
 
@@ -20,6 +21,7 @@ class Router {
     private OrganisationController: OrganisationController;
     private SupervisorController: SupervisorController;
     private KidController: KidController;
+    private FicheTypeController: FicheTypeController;
 
     constructor( app: Application, config: IConfig ) {
         this.app = app;
@@ -87,6 +89,7 @@ class Router {
 
     private checkAdminAccess = (req: Request, res: Response, next: NextFunction): void => {
         try {
+            if (!req.headers.authorization) throw {status: 403, msg: 'Authorization required' }
             const verification = this.AuthService.verifyToken(req.headers.authorization.split(' ')[1]);
             if (verification.result && verification.content.role === 'admin') {
                 next();
@@ -101,6 +104,7 @@ class Router {
 
     private checkOrganisationAccess = (req: Request, res: Response, next: NextFunction): void => {
         try {
+            if (!req.headers.authorization) throw {status: 403, msg: 'Authorization required' }
             const verification = this.AuthService.verifyToken(req.headers.authorization.split(' ')[1]);
             if (verification.result && verification.content.role === 'organisation') {
                 req.body.verifiedOrganisationId = verification.content.id;
@@ -116,6 +120,7 @@ class Router {
 
     private checkKidAccess = (req: Request, res: Response, next: NextFunction): void => {
         try {
+            if (!req.headers.authorization) throw {status: 403, msg: 'Authorization required' }
             const verification = this.AuthService.verifyToken(req.headers.authorization.split(' ')[1]);
             if (verification.result && verification.content.role === 'kid') {
                 req.body.verifiedKidId = verification.content.id;
@@ -131,6 +136,7 @@ class Router {
 
     private checkSupervisorAccess = (req: Request, res: Response, next: NextFunction): void => {
         try {
+            if (!req.headers.authorization) throw {status: 403, msg: 'Authorization required' }
             const verification = this.AuthService.verifyToken(req.headers.authorization.split(' ')[1]);
             if (verification.result && verification.content.role === 'supervisor') {
                 req.body.verifiedSupervisorId = verification.content.id;
@@ -151,6 +157,7 @@ class Router {
         this.OrganisationController = new OrganisationController();
         this.SupervisorController = new SupervisorController();
         this.KidController = new KidController();
+        this.FicheTypeController = new FicheTypeController();
     }
 
     private registerRoutes() {
@@ -159,6 +166,10 @@ class Router {
         this.app.get('/admin/organisation/:id', this.checkAdminAccess, this.OrganisationController.getById);
         this.app.get('/admin/organisations', this.checkAdminAccess, this.OrganisationController.getAll);
         this.app.get('/admin/supervisor/:id', this.checkAdminAccess, this.SupervisorController.getById);
+        this.app.get('/admin/fichetypes', this.checkAdminAccess, this.FicheTypeController.getAll);
+        this.app.post('/admin/fichetypes', this.checkAdminAccess, this.FicheTypeController.new);
+        this.app.patch('/admin/fichetypes', this.checkAdminAccess, this.FicheTypeController.update);
+        this.app.delete('/admin/fichetypes/:id', this.checkAdminAccess, this.FicheTypeController.softDelete);
 
         this.app.post('/token/organisation', this.sendOrganisationToken);
         this.app.post('/token/supervisor', this.sendSupervisorToken);
@@ -178,6 +189,7 @@ class Router {
         this.app.patch('/organisation/kid', this.checkOrganisationAccess, this.KidController.update);
         this.app.delete('/organisation/kid', this.checkOrganisationAccess, this.KidController.softDelete);
         this.app.patch('/organisation/kid/auth', this.checkOrganisationAccess, this.KidController.authUpdate);
+        this.app.get('/organisation/fichetypes', this.checkOrganisationAccess, this.FicheTypeController.getAll);
 
 
         this.app.get('/supervisor', this.checkSupervisorAccess, this.SupervisorController.getSelf);
@@ -185,6 +197,7 @@ class Router {
         this.app.post('/supervisor/kid/sticker', this.checkSupervisorAccess, this.KidController.addSticker);
         this.app.get('/supervisor/kid/stickers', this.checkSupervisorAccess, this.KidController.getAllStickers);
         this.app.get('/supervisor/kid/:id', this.checkSupervisorAccess, this.KidController.getById);
+        this.app.get('/supervisor/fichetypes', this.checkSupervisorAccess, this.FicheTypeController.getAll);
 
         this.app.get('/kid', this.checkKidAccess, this.KidController.getSelf);
 
@@ -195,6 +208,8 @@ class Router {
 			this.PictureController.uploadImage
         );
         this.app.get('/picture/:filename', this.PictureController.show);
+        this.app.post('/kid/fiche', this.checkSupervisorAccess, this.KidController.newFiche);
+        this.app.delete('/kid/fiche', this.checkSupervisorAccess, this.KidController.deleteFiche);
     }
 }
 
