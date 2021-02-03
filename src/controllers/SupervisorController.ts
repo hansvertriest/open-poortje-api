@@ -76,6 +76,37 @@ class SupervisorController {
         }
     }
 
+
+    public searchByName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const id = req.body.verifiedOrganisationId;
+            const { search } = req.params;
+
+            if (!search) throw { status: 404, msg: "No search value given." };
+            
+            // get model
+            const organisation: IOrganisation = await OrganisationModel.findOne({'_id': id})
+                .catch(() => {
+                    throw { status: 500, msg: "Error occured while finding your data" };
+                });
+
+            if (!organisation) throw { status: 404, msg: "Could not find organisation" };
+
+            const populatedOrganisation = await organisation.populate('supervisors').execPopulate();
+
+            const filteredDeleted = populatedOrganisation.supervisors.filter((supervisor) => !supervisor._soft_deleted)
+
+            const supervisors = filteredDeleted.filter((supervisor) => {
+                return (supervisor.first_name+supervisor.last_name).toLowerCase().includes(search.toLowerCase())
+            });
+            res.send({organisation_id: id, supervisors});
+        } catch (error) {
+            const log = (error.msg) ? `!!! ERROR ${error.msg}` : error;
+            console.log(log) 
+            res.status(error.status).send({message: error.msg});
+        }
+    }
+
     // READ
     
     public getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -179,6 +179,8 @@ class Router {
         this.app.get('/organisation', this.checkOrganisationAccess, this.OrganisationController.getById);
         this.app.post('/organisation/supervisor', this.checkOrganisationAccess, this.SupervisorController.new);
         this.app.get('/organisation/supervisor/:id', this.checkOrganisationAccess, this.SupervisorController.getById);
+        this.app.get('/organisation/search/supervisor/', this.checkOrganisationAccess, this.SupervisorController.searchByName);
+        this.app.get('/organisation/search/supervisor/:search', this.checkOrganisationAccess, this.SupervisorController.searchByName);
         this.app.get('/organisation/supervisors', this.checkOrganisationAccess, this.SupervisorController.getAll);
         this.app.patch('/organisation/supervisor', this.checkOrganisationAccess, this.SupervisorController.update);
         this.app.patch('/organisation/supervisor/auth', this.checkOrganisationAccess, this.SupervisorController.authUpdate);
@@ -190,6 +192,8 @@ class Router {
         this.app.delete('/organisation/kid', this.checkOrganisationAccess, this.KidController.softDelete);
         this.app.patch('/organisation/kid/auth', this.checkOrganisationAccess, this.KidController.authUpdate);
         this.app.get('/organisation/fichetypes', this.checkOrganisationAccess, this.FicheTypeController.getAll);
+        this.app.get('/organisation/search/kid/', this.checkOrganisationAccess, this.KidController.searchByName);
+        this.app.get('/organisation/search/kid/:search', this.checkOrganisationAccess, this.KidController.searchByName);
 
 
         this.app.get('/supervisor', this.checkSupervisorAccess, this.SupervisorController.getSelf);
