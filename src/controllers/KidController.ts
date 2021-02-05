@@ -355,7 +355,7 @@ class KidController {
 
                 if (!update) throw { status: 404, msg: "Could not find data" };
 
-                res.send({supervisorUpdated: Utils.obscureAuthOfModel(update)});
+                res.send({kidUpdated: Utils.obscureAuthOfModel(update)});
             } else { 
                 throw { status: 404, msg: "Could not find kid in organization." }; 
             }
