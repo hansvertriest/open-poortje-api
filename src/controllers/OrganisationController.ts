@@ -58,7 +58,9 @@ class OrganisationController {
 
             // populate organisation
             let populatedOrganisation = await organisation.populate('supervisors').execPopulate()
+            // populatedOrganisation.supervisors = populatedOrganisation.supervisors.filter((supervisor) => !supervisor._soft_deleted);
             populatedOrganisation = await organisation.populate('kids').execPopulate()
+            // populatedOrganisation.kids = populatedOrganisation.kids.filter((kid) => !kid._soft_deleted);
 
             res.send(Utils.obscureAuthOfModel(organisation));
         } catch (error) {

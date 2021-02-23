@@ -7,9 +7,10 @@ class GlobalMiddleware {
         app.use(bodyParser.json({ limit: '50mb' }));
         app.use(cors({
             origin: true,
-            methods: 'GET, HEAD, PUT,PATCH,POST,DELETE',
+            methods: ['GET','HEAD','PUT','PATCH','POST','DELETE'],
             credentials: true,
             exposedHeaders: ['x-auth-token'],
+            optionsSuccessStatus: 200,
         }));
     }
 

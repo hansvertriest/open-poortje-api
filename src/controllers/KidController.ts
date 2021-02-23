@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { KidModel, KidKeys, OrganisationModel, IKid, IOrganisation, IFiche, SupervisorModel, ISupervisor, IFicheType, FicheTypeModel } from '../models';
-import { Utils } from '../services';
+import { IAuth, Utils } from '../services';
 import { Types } from 'mongoose';
 
 class KidController {
@@ -12,7 +12,34 @@ class KidController {
     public new = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             // get props
-            const { first_name, last_name, birth_date, organisation_id, auth } = req.body;
+            const { first_name, last_name, birth_date, organisation_id, skin_color, theme_color, password } = req.body;
+            
+            // Generate first_name
+            const organisation: IOrganisation = await OrganisationModel.findOne({ _id: req.body.verifiedOrganisationId || organisation_id })
+                .catch((error:any) => {
+                    console.log(error)
+                    throw { status: 500, msg: "Could not save data" };
+                });
+            const populatedOrganisation = await organisation.populate('kids').execPopulate();
+
+            let userName: string = '';
+            let tryIndex: number = 0;
+            do {
+                userName = '';
+                const nameInPieces = [...first_name.replace('-', ' ').split(' '), ...last_name.replace('-', ' ').split(' ')];
+                nameInPieces.forEach((piece) => {
+                    const l1 = piece[0] || '';
+                    const l2 = piece[1] || '';
+                    const l3 = piece[2] || '';
+                    userName +=  l1 + l2 + l3;
+                });
+                if (tryIndex > 0) {
+                    userName += tryIndex
+                }
+                tryIndex += 1
+            } while (populatedOrganisation.kids.map((kid) => kid.auth.username).includes(userName.toLowerCase()));
+
+            const auth: IAuth = { username: userName.toLowerCase(), password }
 
             // generate hashed auth
             const hashedAuth = await Utils.hashAuth(auth);
@@ -24,6 +51,8 @@ class KidController {
                 birth_date,
                 current_organisation: req.body.verifiedOrganisationId || organisation_id,
                 auth: hashedAuth,
+                skin_color,
+                theme_color,
                 _soft_deleted: false
             }, KidKeys, true);
 
@@ -40,7 +69,7 @@ class KidController {
             // save model
             const savedKid = await newKid.save()
                 .catch((error:any) => {
-                    console.log(error)
+                    // console.log(error)
                     if (error.code == 11000) throw { status: 412, msg: "Duplicate kid name" };
                     throw { status: 500, msg: "Could not save data" };
                 });
@@ -284,7 +313,7 @@ class KidController {
                 
                 if (!update) throw { status: 404, msg: "Could not find data" };
 
-                res.send({supervisorUpdated: Utils.obscureAuthOfModel(update)});
+                res.send({kidUpdated: Utils.obscureAuthOfModel(update)});
             } else { 
                 throw { status: 404, msg: "Could not find kid in organisation." }; 
             }
