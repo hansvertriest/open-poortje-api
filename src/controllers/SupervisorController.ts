@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { SupervisorModel, SupervisorKeys, OrganisationModel, IOrganisation, ISupervisor } from '../models';
-import { Utils } from '../services';
+import { IAuth, Utils } from '../services';
 
 class SupervisorController {
     constructor() {
@@ -12,8 +12,35 @@ class SupervisorController {
     public new = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             // get props
-            const { first_name, last_name, verifiedOrganisationId, auth } = req.body;
+            const { first_name, last_name, verifiedOrganisationId, password } = req.body;
             const organisation_id = req.body.verifiedSupervisorId;
+
+            // Generate first_name
+            const organisation: IOrganisation = await OrganisationModel.findOne({ _id: req.body.verifiedOrganisationId || organisation_id })
+                .catch((error:any) => {
+                    console.log(error)
+                    throw { status: 500, msg: "Could not save data" };
+                });
+            const populatedOrganisation = await organisation.populate('supervisors').execPopulate();
+
+            let userName: string = '';
+            let tryIndex: number = 0;
+            do {
+                userName = '';
+                const nameInPieces = [...first_name.replace('-', ' ').split(' '), ...last_name.replace('-', ' ').split(' ')];
+                nameInPieces.forEach((piece) => {
+                    const l1 = piece[0] || '';
+                    const l2 = piece[1] || '';
+                    const l3 = piece[2] || '';
+                    userName +=  l1 + l2 + l3;
+                });
+                if (tryIndex > 0) {
+                    userName += tryIndex
+                }
+                tryIndex += 1
+            } while (populatedOrganisation.supervisors.map((supervisor) => supervisor.auth.username).includes(userName.toLowerCase()));
+
+            const auth: IAuth = { username: userName.toLowerCase(), password }
 
             // generate hashed auth
             const hashedAuth = await Utils.hashAuth(auth);
