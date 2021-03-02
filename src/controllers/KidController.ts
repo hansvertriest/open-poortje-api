@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { KidModel, KidKeys, OrganisationModel, IKid, IOrganisation, IFiche, SupervisorModel, ISupervisor, IFicheType, FicheTypeModel } from '../models';
-import { IAuth, Utils } from '../services';
+import { GridFs, IAuth, Utils } from '../services';
 import { Types } from 'mongoose';
 
 class KidController {
@@ -119,6 +119,7 @@ class KidController {
                 edited_by_supervisor: Types.ObjectId(supervisorId),
                 fiche_type: Types.ObjectId(fiche.fiche_type),
                 fiche_data: fiche.fiche_data,
+                picture_name: fiche.picture_name,
             }
 
             // find and update kid
@@ -445,6 +446,11 @@ class KidController {
 
             // find and update kid
             const kid: IKid = await KidModel.findOne({_id: kidId})
+
+            const fiche = kid.fiches.filter((fiche) => fiche._id = ficheId)[0];
+            const fileId = await GridFs.getFileId(fiche.picture_name);
+            GridFs.deleteImage(fileId);
+
 
             kid.fiches = kid.fiches.filter((fiche) => fiche._id != ficheId);
 

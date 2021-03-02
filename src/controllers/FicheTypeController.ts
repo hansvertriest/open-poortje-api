@@ -9,15 +9,18 @@ class TestController {
     public new = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             // get props
-            const { name, description, thumbnail } = req.body;
+            const { name, description, thumbnail, category } = req.body;
 
-            if (!name || !description || !thumbnail) throw { status: 403, msg: "Insufficient data" };
+            if (!name || !description || !thumbnail || !category) throw { status: 403, msg: "Insufficient data" };
+
+            if ( !['Rechten', 'Ik', 'CKG'].includes(category) ) throw { status: 403, msg: "Category does not exist" };
 
             // Create new do
             const newFicheType = new FicheTypeModel({
                 name,
                 description,
-                thumbnail
+                thumbnail,
+                category
             });
 
             // save model

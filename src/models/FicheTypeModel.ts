@@ -12,6 +12,7 @@ const ficheTypeSchema: Schema = new Schema({
     name: { type: String, default: 'Nieuwe fiche-type' },
     description: { type: String, default: 'Een beschrijving voor dit fiche-type.' },
     thumbnail: { type: String },
+    category: { type: String, enum: ['CKG', 'Ik', 'Rechten'], default: 'CKG'},
     _soft_deleted: { type: Boolean, default: false }
 }); 
 
