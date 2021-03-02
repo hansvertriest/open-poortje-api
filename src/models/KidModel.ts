@@ -25,6 +25,7 @@ interface IFiche {
     created_by_supervisor: Types.ObjectId,
     edited_by_supervisor: Types.ObjectId,
     fiche_type: Types.ObjectId,
+    picture_name: string
     fiche_data: any, 
 }
 
@@ -47,6 +48,7 @@ const kidSchema: Schema = new Schema({
         edited_by_supervisor: { type: Schema.Types.ObjectId, ref: 'supervisor', required: true},
         fiche_type: { type: Schema.Types.ObjectId, ref: 'fiche', required: true},
         fiche_data: { type: Schema.Types.Mixed },
+        picture_name: { type: String }
      }],
     stickers: [{
         // _id: { type: Schema.Types.ObjectId, required: true },
