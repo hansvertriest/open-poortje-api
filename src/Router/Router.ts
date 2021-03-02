@@ -206,7 +206,13 @@ class Router {
         this.app.get('/kid', this.checkKidAccess, this.KidController.getSelf);
 
         this.app.post(
-			'/picture',
+			'/sticker',
+			multer({ storage: memoryStorage() }).single('picture'),
+			GridFs.resizeAndUploadImage,
+			this.PictureController.uploadImage
+        );
+        this.app.post(
+			'/fiche',
 			multer({ storage: memoryStorage() }).single('picture'),
 			GridFs.resizeAndUploadImage,
 			this.PictureController.uploadImage

@@ -49,10 +49,9 @@ class GridFs {
 
 	public resizeAndUploadImage = async (req: MulterRequest, res: Response, next: NextFunction): Promise < Response < any >> => {
 		const input = req.file;
-		const dimensionX = (req.body.width && parseInt(req.body.width) <= 500) ? parseInt(req.body.width) : 200;
-		const dimensionY = (req.body.height && parseInt(req.body.height) <= 500) ? parseInt(req.body.height) : 200;
+		const dimensionX = (req.body.width && parseInt(req.body.width) <= 900) ? parseInt(req.body.width) : 200;
+		const dimensionY = (req.body.height && parseInt(req.body.height) <= 900) ? parseInt(req.body.height) : 200;
 		try {
-			if (dimensionX !== dimensionY) throw {code: 412, msg: 'Given dimensions must be square.'}
 			crypto.randomBytes(16, async (err, buf) => {
 				await sharp(input.buffer)
 					.resize(dimensionX, dimensionY, {
@@ -80,7 +79,7 @@ class GridFs {
 								next();
 							})
 						)
-					});
+					})
 			})
 		} catch (error) {
 			if (error.code) return res.status(error.code).send(error);
