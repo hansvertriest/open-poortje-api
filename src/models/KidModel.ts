@@ -38,7 +38,7 @@ const kidSchema: Schema = new Schema({
     last_name: { type: String, maxLength: 100, required: true, trim: true},
     birth_date: { type: Date, required: true },
     theme_color: { type: String, enum: ['color-01', 'color-02', 'color-03', 'color-04'], default: 'color-01'},
-    skin_color: { type: String, enum: ['brown', 'orange', 'pink', 'pale'], default: '#fff'},
+    skin_color: { type: String, enum: ['skin-01', 'skin-02', 'skin-03', 'skin-04'], default: '#fff'},
     current_organisation: { type: Schema.Types.ObjectId, ref: 'organisation', required: true},
     fiches: [{ 
         _id: { type: Schema.Types.ObjectId},

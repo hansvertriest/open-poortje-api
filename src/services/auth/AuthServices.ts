@@ -46,7 +46,7 @@ export default class AuthService {
       };
   
       return jwt.sign(payload, this.config.auth.secret, {
-        expiresIn: 3600,
+        expiresIn: 24*60*60,
       });
     } else {
       return ""
