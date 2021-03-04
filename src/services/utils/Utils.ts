@@ -23,9 +23,8 @@ class Utils {
         return obscuredModel;
     }
     
-    static hashAuth(auth: IAuth) {
+    static hashAuth(auth: IAuth): Promise<IAuth> {
         return new Promise((resolve, reject) => { 
-
             bcrypt.genSalt(12, function(err, salt) {
                 if (err) return reject(err);
         

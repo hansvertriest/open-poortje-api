@@ -11,7 +11,7 @@ class OrganisationController {
         try {
             // get props
             const { name, auth } = req.body;
-
+            console.log(auth)
             // generate hashed auth
             const hashedAuth = await Utils.hashAuth(auth)
                 .catch(() =>{

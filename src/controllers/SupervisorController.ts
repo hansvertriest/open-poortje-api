@@ -261,13 +261,16 @@ class SupervisorController {
 
             if (authUpdate.newPassword != authUpdate.confirmNewPassword) throw { status: 412, msg: "Passwords do not match" }
 
+            // Hash auth update
+            const hashedAuth = await Utils.hashAuth({password: authUpdate.newPassword, username: ''});
+
             // find organisation
             const organisation = await OrganisationModel.findOne({'_id': verifiedOrganisationId});
 
             if (!organisation) throw { status: 404, msg: "Could not find organisation" };
 
             if (organisation.supervisors.includes(id)) {
-                const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'auth.password': authUpdate.newPassword}, {new: true})
+                const update = await SupervisorModel.findOneAndUpdate({'_id': id}, {'auth.password': hashedAuth.password}, {new: true})
                     .catch((error: any) => {
                         console.log(error)
                         if (error.code == 11000) throw { status: 412, msg: "Duplicate supervisor name" };

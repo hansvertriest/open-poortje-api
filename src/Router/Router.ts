@@ -48,7 +48,8 @@ class Router {
     private sendOrganisationToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const token = await this.AuthService.createOrganisationToken(req.body.auth);
-            if (token === '') {
+            console.log(token)
+            if (!token) {
                 throw {msg: 'Incorrect organisation credentials'};
             } else {
                 res.status(200).send({token});
@@ -62,7 +63,7 @@ class Router {
     private sendSupervisorToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const token = await this.AuthService.createSupervisorToken(req.body.auth);
-            if (token === '') {
+            if (!token) {
                 throw {msg: 'Incorrect supervisor credentials'};
             } else {
                 res.status(200).send({token});
