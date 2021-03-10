@@ -214,13 +214,14 @@ class Router {
         );
         this.app.post(
 			'/fiche',
-			multer({ storage: memoryStorage() }).single('picture'),
+			multer({ storage: memoryStorage(), limits: { fieldSize: 10 * 1024 * 1024 } }).single('picture'),
 			GridFs.resizeAndUploadImage,
 			this.PictureController.uploadImage
         );
         this.app.get('/picture/:filename', this.PictureController.show);
         this.app.post('/kid/fiche', this.checkSupervisorAccess, this.KidController.newFiche);
         this.app.delete('/kid/fiche', this.checkSupervisorAccess, this.KidController.deleteFiche);
+        this.app.get('/kid/fichetypes', this.checkKidAccess, this.FicheTypeController.getAll);
     }
 }
 
